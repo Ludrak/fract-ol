@@ -44,10 +44,10 @@ clean:
 fclean: clean
 	@rm -rf $(BIN_DIR)
 
-dellib:
+cleanlib:
 	@make -C $(LIB_DIR)/vector fclean
 	@make -C $(LIB_DIR)/mlx clean
 
 re: fclean all
 
-.PHONY: all clean fclean re dellib
+.PHONY: all clean fclean re cleanlib

@@ -27,9 +27,8 @@ t_color         clerp(t_color from, t_color to, float lerp)
 {
     t_color lerped;
 
-    lerped.channels.r = from.channels.r * lerp + to.channels.r * (1 - lerp);
-    lerped.channels.g = from.channels.g * lerp + to.channels.g * (1 - lerp);
-    lerped.channels.b = from.channels.b * lerp + to.channels.b * (1 - lerp);
+    lerped.channels.r = from.channels.r * lerp + to.channels.r * (1.0F - lerp);
+    lerped.channels.g = from.channels.g * lerp + to.channels.g * (1.0F - lerp);
+    lerped.channels.b = from.channels.b * lerp + to.channels.b * (1.0F - lerp);
     return (lerped);
-
 }

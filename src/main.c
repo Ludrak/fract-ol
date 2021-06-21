@@ -3,13 +3,12 @@
 
 t_color	mandelbrot(double x, double y, const t_app *const app)
 {
-	float	bright;
 	double	a;
 	double	b;
 	double	a_sq;
 	double	b_sq;
 	double	z;
-	int		n;
+	double	n;
 
 	n = 0;
 	z = 0;
@@ -24,16 +23,17 @@ t_color	mandelbrot(double x, double y, const t_app *const app)
 		z = a + b;
 		n++;
 	}
-	if (fabs(z) >= INF)
+	if (n < MAX_ITERATIONS)
 	{
-
-		//nsmooth := n + 1 - log(log(zn.abs()))/log(2)
-		bright = mapd(n + 1 - logf(logf(fabs(z))) / logf(2), 0, 100, 0, 255);
-		//bright = mapd(n + 1 - logf(log2f(fabs(a + b))), 0, MAX_ITERATIONS / (MAX_ITERATIONS / 32), 0, 255);
+		double log_zn = log(a*a + b*b) / 2;
+		double nu = log(log_zn / log(2)) / log(2);
+		n = n + 1 - nu;
+		t_color c1 = app->palette[(int)floor(n) % PALETTE_SIZE];
+		t_color c2 = app->palette[((int)floor(n) + 1) % PALETTE_SIZE];
+		return clerp(c2, c1, n - floor(n));
 	}
 	else
-		return ((t_color){0x0});
-	return (app->palette[(int)bright % PALETTE_SIZE]);
+		return (brightness(0));
 }
 
 void	map_complex_space
