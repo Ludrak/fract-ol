@@ -1,0 +1,9 @@
+*.out
+*.dSYM
+fractol_origin.c
+fract-ol
+.vscode
+*.a
+*.o
+*/bin
+

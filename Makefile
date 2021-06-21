@@ -4,6 +4,7 @@ NAME=fract-ol
 SRC_DIR=src
 BIN_DIR=bin
 INC_DIR=inc lib/mlx lib/vector
+INCS=inc/color.h inc/fractol.h inc/utils.h
 LIBS=libmlx.a libvector.a
 LIB_DIR=lib/
 
@@ -25,7 +26,7 @@ $(NAME): $(LIB_DIR)/mlx/libmlx.a $(LIB_DIR)/vector/libvector.a $(BIN_DIR) $(OBJS
 	$(CC) -o $(NAME) $(CFLAGS) $(LFLAGS) $(FFLAGS) $(OBJS)
 	@echo "$(NAME): linking done"
 
-$(BIN_DIR)/%.o : $(SRC_DIR)/%.c
+$(BIN_DIR)/%.o : $(SRC_DIR)/%.c $(INCS)
 	@$(CC) -c -o $@ $(CFLAGS) $(IFLAGS) $<
 	@echo "$(NAME): Compiled: $<"
 

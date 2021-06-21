@@ -1,36 +1,36 @@
 #include <stdio.h>
 #include "fractol.h"
 
-t_color	mandelbrot(double x, double y, const t_app *const app)
+t_color	mandelbrot(double x0, double y0, const t_app *const app)
 {
-	double	a;
-	double	b;
-	double	a_sq;
-	double	b_sq;
+	double	x;
+	double	y;
+	double	x_squared;
+	double	y_squared;
 	double	z;
-	double	n;
+	double	iterations;
 
-	n = 0;
+	iterations = 0;
 	z = 0;
-	a = x;
-	b = y;
-	while (fabs(z) < INF && n < MAX_ITERATIONS)
+	x = x0;
+	y = y0;
+	while (fabs(z) < INF && iterations < MAX_ITERATIONS)
 	{
-		a_sq = a*a - b*b;
-		b_sq = 2*a*b;
-		a = a_sq + x;
-		b = b_sq + y;
-		z = a + b;
-		n++;
+		x_squared = x * x - y * y;
+		y_squared = 2 * x * y;
+		x = x_squared + x0;
+		y = y_squared + y0;
+		z = x + y;
+		iterations++;
 	}
-	if (n < MAX_ITERATIONS)
+	if (iterations < MAX_ITERATIONS)
 	{
-		double log_zn = log(a*a + b*b) / 2;
-		double nu = log(log_zn / log(2)) / log(2);
-		n = n + 1 - nu;
-		t_color c1 = app->palette[(int)floor(n) % PALETTE_SIZE];
-		t_color c2 = app->palette[((int)floor(n) + 1) % PALETTE_SIZE];
-		return clerp(c2, c1, n - floor(n));
+		double log_zn = log(x * x + y * y) / 2;
+		double nu = log(log_zn / LOG2) / LOG2;
+		iterations = iterations + 1 - nu;
+		t_color c1 = app->palette[(int)floor(iterations) % PALETTE_SIZE];
+		t_color c2 = app->palette[((int)floor(iterations) + 1) % PALETTE_SIZE];
+		return clerp(c2, c1, iterations - floor(iterations));
 	}
 	else
 		return (brightness(0));
@@ -48,7 +48,7 @@ void	map_complex_space
 	sc_y = i / app->frame->size_x;
 	max_sz = app->frame->size_x > app->frame->size_y ? app->frame->size_x : app->frame->size_y;
 	pos->x = mapd(sc_x, 0, max_sz, -zoom_factor + off.x, zoom_factor + off.x);
-	diff = (max_sz - app->frame->size_y) / 2;
+	diff = (max_sz - app->frame->size_y) * 0.5f;
 	pos->y = mapd(sc_y, -diff, max_sz - diff, -zoom_factor + off.y, zoom_factor + off.y);
 }
 
@@ -73,15 +73,18 @@ int draw_loop(void *app_ptr)
 {
 	t_app			*app;
 	uint32_t		i;
+	uint32_t		n;
 	t_vec2d			pos;
 
 	app = (t_app *)app_ptr;
 	i = 0;
+	n = 0;
 	while (i < app->frame->size_buf - 1)
 	{
-		map_complex_space(app, i / 4, &pos, app->offset, app->zoom);
+		map_complex_space(app, n, &pos, app->offset, app->zoom);
 		*(uint32_t *)(app->frame->screen->data + i) = mandelbrot(pos.x, pos.y, app).value;
 		i += 4;
+		n++;
 	}
 	shift_palette(app->palette, PALETTE_SIZE);
 	app->zoom *= 1 - app->zoom_factor;
@@ -117,9 +120,9 @@ int main()
 	screen->data = (char *)mlx_get_data_addr(screen->scr_ptr, &screen->bpp, &screen->sl, &screen->endian);
 	frame->screen = screen;
 	app.frame = frame;
-	app.zoom_factor = 0.1;
+	app.zoom_factor = 0.0;
 	app.zoom = 4;
-	app.offset = vec2d(0, 1);
+	app.offset = vec2d(0, 0);
 
 	/** PALETTE 256 **/
 	/*set_palette(app.palette, 0, 32, (t_color[2]){{0xffffff}, {0xf7da57}});

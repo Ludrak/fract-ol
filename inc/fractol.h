@@ -8,10 +8,13 @@
 #include "utils.h"
 #include "vectors.h"
 
+
 #define MAX_ITERATIONS 1000
 #define INF            1000
 
 #define PALETTE_SIZE	32
+
+#define LOG2			0.693147
 
 typedef struct	s_screen
 {
