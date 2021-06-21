@@ -120,9 +120,9 @@ int main()
 	screen->data = (char *)mlx_get_data_addr(screen->scr_ptr, &screen->bpp, &screen->sl, &screen->endian);
 	frame->screen = screen;
 	app.frame = frame;
-	app.zoom_factor = 0.0;
+	app.zoom_factor = 0.05;
 	app.zoom = 4;
-	app.offset = vec2d(0, 0);
+	app.offset = vec2d(0, -1);
 
 	/** PALETTE 256 **/
 	/*set_palette(app.palette, 0, 32, (t_color[2]){{0xffffff}, {0xf7da57}});
