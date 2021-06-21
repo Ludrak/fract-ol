@@ -12,7 +12,10 @@
 #define MAX_ITERATIONS 1000
 #define INF            1000
 
-#define PALETTE_SIZE	32
+#define PALETTE_SIZE	32 // currently 256 32 16 are allowed
+
+#define ZOOM_RE			0
+#define ZOOM_IM			1
 
 #define LOG2			0.693147
 

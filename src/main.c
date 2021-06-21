@@ -1,37 +1,40 @@
 #include <stdio.h>
 #include "fractol.h"
 
+t_color	smooth_color(const t_app *const app, double iterations, const double x, const double y)
+{
+	double log_zn;
+	double nu;
+
+	log_zn = log(x * x + y * y) / 2;
+	nu = log(log_zn / LOG2) / LOG2;
+	iterations = iterations + 1 - nu;
+	t_color c1 = app->palette[(int)floor(iterations) % PALETTE_SIZE];
+	t_color c2 = app->palette[((int)floor(iterations) + 1) % PALETTE_SIZE];
+	return (clerp(c2, c1, iterations - floor(iterations)));
+}
+
 t_color	mandelbrot(double x0, double y0, const t_app *const app)
 {
 	double	x;
 	double	y;
 	double	x_squared;
 	double	y_squared;
-	double	z;
 	double	iterations;
 
 	iterations = 0;
-	z = 0;
 	x = x0;
 	y = y0;
-	while (fabs(z) < INF && iterations < MAX_ITERATIONS)
+	while (fabs(x + y) < INF && iterations < MAX_ITERATIONS)
 	{
 		x_squared = x * x - y * y;
 		y_squared = 2 * x * y;
 		x = x_squared + x0;
 		y = y_squared + y0;
-		z = x + y;
 		iterations++;
 	}
 	if (iterations < MAX_ITERATIONS)
-	{
-		double log_zn = log(x * x + y * y) / 2;
-		double nu = log(log_zn / LOG2) / LOG2;
-		iterations = iterations + 1 - nu;
-		t_color c1 = app->palette[(int)floor(iterations) % PALETTE_SIZE];
-		t_color c2 = app->palette[((int)floor(iterations) + 1) % PALETTE_SIZE];
-		return clerp(c2, c1, iterations - floor(iterations));
-	}
+		return (smooth_color(app, iterations, x, y));
 	else
 		return (brightness(0));
 }
@@ -122,43 +125,46 @@ int main()
 	app.frame = frame;
 	app.zoom_factor = 0.05;
 	app.zoom = 4;
-	app.offset = vec2d(0, -1);
+	app.offset = vec2d(ZOOM_RE, -ZOOM_IM);
 
 	/** PALETTE 256 **/
-	/*set_palette(app.palette, 0, 32, (t_color[2]){{0xffffff}, {0xf7da57}});
+	#if PALETTE_SIZE == 256
+	set_palette(app.palette, 0, 32, (t_color[2]){{0xffffff}, {0xf7da57}});
 	set_palette(app.palette, 33, 44, (t_color[2]){{0xf7da57}, {0xe8761e}});
 	set_palette(app.palette, 44, 55, (t_color[2]){{0xe8761e}, {0x0}});
 	set_palette(app.palette, 55, 65, (t_color[2]){{0xffffff}, {0x0c52f5}});
-
 	set_palette(app.palette, 65, 86, (t_color[2]){{0xffffff}, {0xf7da57}});
 	set_palette(app.palette, 87, 92, (t_color[2]){{0xf7da57}, {0xe8761e}});
 	set_palette(app.palette, 92, 98, (t_color[2]){{0xe8761e}, {0x0}});
 	set_palette(app.palette, 98, 112, (t_color[2]){{0xffffff}, {0x0c52f5}});
-
 	set_palette(app.palette, 112, 135, (t_color[2]){{0xffffff}, {0xf7da57}});
 	set_palette(app.palette, 135, 145, (t_color[2]){{0xf7da57}, {0xe8761e}});
 	set_palette(app.palette, 145, 150, (t_color[2]){{0xe8761e}, {0x0}});
 	set_palette(app.palette, 150, 160, (t_color[2]){{0xffffff}, {0x0c52f5}});
-
 	set_palette(app.palette, 160, 165, (t_color[2]){{0xffffff}, {0xf7da57}});
 	set_palette(app.palette, 165, 180, (t_color[2]){{0xf7da57}, {0xe8761e}});
 	set_palette(app.palette, 180, 185, (t_color[2]){{0xe8761e}, {0x0}});
-	set_palette(app.palette, 185, 255, (t_color[2]){{0xffffff}, {0x0c52f5}});*/
+	set_palette(app.palette, 185, 255, (t_color[2]){{0xffffff}, {0x0c52f5}});
+	#endif
 	/**			**/
 
 	/** PALETTE 32 **/
+	#if PALETTE_SIZE == 32
 	set_palette(app.palette, 0, 10, (t_color[2]){{0xffffff}, {0xf7da57}});
 	set_palette(app.palette, 10, 16, (t_color[2]){{0xf7da57}, {0xe8761e}});
 	set_palette(app.palette, 16, 18, (t_color[2]){{0xe8761e}, {0x0}});
 	set_palette(app.palette, 18, 31, (t_color[2]){{0xffffff}, {0x0c52f5}});
+	#endif
 	/**			   **/
 
 
 	/** PALETTE 16 **/
-	/*set_palette(app.palette, 0, 5, (t_color[2]){{0xffffff}, {0xf7da57}});
+	#if PALETTE_SIZE == 16
+	set_palette(app.palette, 0, 5, (t_color[2]){{0xffffff}, {0xf7da57}});
 	set_palette(app.palette, 5, 8, (t_color[2]){{0xf7da57}, {0xe8761e}});
 	set_palette(app.palette, 8, 9, (t_color[2]){{0xe8761e}, {0x0}});
-	set_palette(app.palette, 9, 16, (t_color[2]){{0xffffff}, {0x0c52f5}});*/
+	set_palette(app.palette, 9, 16, (t_color[2]){{0xffffff}, {0x0c52f5}});
+	#endif
 	/**			   **/
 
 	mlx_hook(app.frame->window, DestroyNotify, NoEventMask, &on_exit, &app);
