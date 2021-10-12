@@ -11,15 +11,11 @@
 #include "input.h"
 
 
-#define MAX_ITERATIONS 1000
+#define MAX_ITERATIONS 100
 #define INF            1000
 
 #define PALETTE_SIZE		100
 #define PALETTE_REPEAT_AMT	MAX_ITERATIONS / PALETTE_SIZE
-
-// -0.56217671787, 0.642816
-#define ZOOM_RE			 -0.56217671787f
-#define ZOOM_IM			0.642816f
 
 #define LOG2			0.693147
 

@@ -89,24 +89,31 @@ int draw_loop(void *app_ptr)
 		i += 4;
 		n++;
 	}
-	//shift_palette(app->palette, PALETTE_SIZE);
+	//shift_palette(app->palette, app->palette_size);
 	mlx_clear_window(app->mlx, app->frame->window);
 	mlx_put_image_to_window(app->frame->screen, app->frame->window, app->frame->screen->scr_ptr, 0, 0);
 
-	if (app->mouse.action & MOUSE_LCLICK)
+	if (app->mouse.action)
 	{
 		t_vec2d mouse_map;
 		int x, y;
 		mlx_mouse_get_pos(app->frame->window, &x, &y);
 		mlx_mouse_move(app->frame->window, app->frame->size_x / 2, app->frame->size_y / 2);
-		mlx_mouse_hide();
 		mouse_map.x = mapd(x, 0, app->frame->size_x, -app->zoom, app->zoom);
 		mouse_map.y = mapd(y, 0, app->frame->size_y, -app->zoom, app->zoom);
-		app->offset = vec_add(app->offset, mouse_map);
-		app->zoom *= 1 - app->zoom_factor;
+		if (app->mouse.action & MOUSE_LCLICK)
+		{
+			app->offset = vec_add(app->offset, mouse_map);
+			app->zoom *= 1 - app->zoom_factor;
+		}
+		else if (app->mouse.action & MOUSE_RCLICK)
+		{
+			app->offset = vec_add(app->offset, mouse_map);
+			app->zoom /= 1 - app->zoom_factor;
+		}
 	}
-	else
-		mlx_mouse_show();
+	//else
+	//	mlx_mouse_show();
 	mlx_do_sync(app->mlx);
 	return (0);
 }
