@@ -8,7 +8,7 @@ t_color         color(uint8_t r, uint8_t g, uint8_t b)
     col.channels.r = r;
     col.channels.g = g;
     col.channels.b = b;
-    col.channels.a = 0x0;
+    col.channels.a = 0x00;
     return (col);
 }
 
@@ -19,7 +19,7 @@ t_color         brightness(uint8_t i)
     col.channels.r = i;
     col.channels.g = i;
     col.channels.b = i;
-    col.channels.a = 0x0;
+    col.channels.a = 0x00;
     return (col);
 }
 

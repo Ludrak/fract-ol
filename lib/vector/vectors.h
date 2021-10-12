@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   vectors.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lrobino <lrobino@student.42lyon.fr>        +#+  +:+       +#+        */
+/*   By: lrobino <lrobino@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/14 16:32:27 by lrobino           #+#    #+#             */
-/*   Updated: 2020/07/14 16:36:42 by lrobino          ###   ########.fr       */
+/*   Updated: 2021/06/22 07:13:15 by lrobino          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ t_vec2d			vec_norm(t_vec2d vec);
 double			vec_mag(t_vec2d vec);
 double			vec_dot (t_vec2d va, t_vec2d vb);
 t_vec2d			vec_set_mag(t_vec2d vec, float mag);
+t_vec2d vec_lerp(t_vec2d from, t_vec2d to, float lerp);
 
 /*
 **  VECTOR UTILS 2 FLOAT

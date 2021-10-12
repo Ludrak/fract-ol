@@ -3,19 +3,23 @@
 
 #include <stdlib.h>
 #include <X11/X.h>
+#include <X11/keysym.h>
 #include "mlx.h"
 #include "color.h"
 #include "utils.h"
 #include "vectors.h"
+#include "input.h"
 
 
 #define MAX_ITERATIONS 1000
 #define INF            1000
 
-#define PALETTE_SIZE	32 // currently 256 32 16 are allowed
+#define PALETTE_SIZE		100
+#define PALETTE_REPEAT_AMT	MAX_ITERATIONS / PALETTE_SIZE
 
-#define ZOOM_RE			0
-#define ZOOM_IM			1
+// -0.56217671787, 0.642816
+#define ZOOM_RE			 -0.56217671787f
+#define ZOOM_IM			0.642816f
 
 #define LOG2			0.693147
 
@@ -41,10 +45,12 @@ typedef struct	s_frame
 
 typedef struct	s_app
 {
-	void		*mlx;
-	t_frame		*frame;
-    t_vec2d     offset;
-    double      zoom;
-    float       zoom_factor;
-    t_color     palette[PALETTE_SIZE];
+	void			*mlx;
+	t_frame			*frame;
+    t_vec2d     	offset;
+    double      	zoom;
+    float      		zoom_factor;
+    t_color     	*palette;
+	uint32_t		palette_size;
+	t_mouse			mouse;
 }				t_app;

@@ -1,6 +1,22 @@
 #include <stdio.h>
 #include "fractol.h"
 
+void	map_complex_space
+	(const t_app *const app, const uint32_t i, t_vec2d *pos, t_vec2d off, const double zoom_factor)
+{
+	double	sc_x;
+	double	sc_y;
+	double	max_sz;
+	double  diff;
+
+	sc_x = i % app->frame->size_x;
+	sc_y = i / app->frame->size_x;
+	max_sz = app->frame->size_x > app->frame->size_y ? app->frame->size_x : app->frame->size_y;
+	pos->x = mapd(sc_x, 0, max_sz, -zoom_factor + off.x, zoom_factor + off.x);
+	diff = (max_sz - app->frame->size_y) * 0.5f;
+	pos->y = mapd(sc_y, -diff, max_sz - diff, -zoom_factor + off.y, zoom_factor + off.y);
+}
+
 t_color	smooth_color(const t_app *const app, double iterations, const double x, const double y)
 {
 	double log_zn;
@@ -9,12 +25,12 @@ t_color	smooth_color(const t_app *const app, double iterations, const double x, 
 	log_zn = log(x * x + y * y) / 2;
 	nu = log(log_zn / LOG2) / LOG2;
 	iterations = iterations + 1 - nu;
-	t_color c1 = app->palette[(int)floor(iterations) % PALETTE_SIZE];
-	t_color c2 = app->palette[((int)floor(iterations) + 1) % PALETTE_SIZE];
+	t_color c1 = app->palette[(int)(((iterations / (double)MAX_ITERATIONS)) * PALETTE_REPEAT_AMT * app->palette_size) % app->palette_size];
+	t_color c2 = app->palette[(int)((((iterations + 1) / (double)MAX_ITERATIONS)) * PALETTE_REPEAT_AMT * app->palette_size) % app->palette_size];
 	return (clerp(c2, c1, iterations - floor(iterations)));
 }
 
-t_color	mandelbrot(double x0, double y0, const t_app *const app)
+t_color	mandelbrot(double x0, double y0, t_app *const app)
 {
 	double	x;
 	double	y;
@@ -37,22 +53,6 @@ t_color	mandelbrot(double x0, double y0, const t_app *const app)
 		return (smooth_color(app, iterations, x, y));
 	else
 		return (brightness(0));
-}
-
-void	map_complex_space
-	(const t_app *const app, const uint32_t i, t_vec2d *pos, t_vec2d off, const double zoom_factor)
-{
-	double	sc_x;
-	double	sc_y;
-	double	max_sz;
-	double  diff;
-
-	sc_x = i % app->frame->size_x;
-	sc_y = i / app->frame->size_x;
-	max_sz = app->frame->size_x > app->frame->size_y ? app->frame->size_x : app->frame->size_y;
-	pos->x = mapd(sc_x, 0, max_sz, -zoom_factor + off.x, zoom_factor + off.x);
-	diff = (max_sz - app->frame->size_y) * 0.5f;
-	pos->y = mapd(sc_y, -diff, max_sz - diff, -zoom_factor + off.y, zoom_factor + off.y);
 }
 
 void shift_palette(t_color *palette, size_t size)
@@ -85,13 +85,28 @@ int draw_loop(void *app_ptr)
 	while (i < app->frame->size_buf - 1)
 	{
 		map_complex_space(app, n, &pos, app->offset, app->zoom);
-		*(uint32_t *)(app->frame->screen->data + i) = mandelbrot(pos.x, pos.y, app).value;
+		*(uint32_t *)(app->frame->screen->data + i) = mandelbrot(pos.x, pos.y, app).value & 0x00FFFFFF;
 		i += 4;
 		n++;
 	}
-	shift_palette(app->palette, PALETTE_SIZE);
-	app->zoom *= 1 - app->zoom_factor;
+	//shift_palette(app->palette, PALETTE_SIZE);
+	mlx_clear_window(app->mlx, app->frame->window);
 	mlx_put_image_to_window(app->frame->screen, app->frame->window, app->frame->screen->scr_ptr, 0, 0);
+
+	if (app->mouse.action & MOUSE_LCLICK)
+	{
+		t_vec2d mouse_map;
+		int x, y;
+		mlx_mouse_get_pos(app->frame->window, &x, &y);
+		mlx_mouse_move(app->frame->window, app->frame->size_x / 2, app->frame->size_y / 2);
+		mlx_mouse_hide();
+		mouse_map.x = mapd(x, 0, app->frame->size_x, -app->zoom, app->zoom);
+		mouse_map.y = mapd(y, 0, app->frame->size_y, -app->zoom, app->zoom);
+		app->offset = vec_add(app->offset, mouse_map);
+		app->zoom *= 1 - app->zoom_factor;
+	}
+	else
+		mlx_mouse_show();
 	mlx_do_sync(app->mlx);
 	return (0);
 }
@@ -105,11 +120,52 @@ int	on_exit(void *app_ptr)
 	return (0);
 }
 
-int main()
+int	on_key_pressed(int key, void *app_ptr)
+{
+	t_app	*app;
+
+	if (key == 53)
+		on_exit(app_ptr);
+	app = (t_app *)app_ptr;
+	return (0);
+}
+
+int	on_mouse_pressed(int button, int pos_x, int pos_y, void *app_ptr)
+{
+	t_app	*app;
+
+	(void)pos_x;
+	(void)pos_y;
+	app = (t_app *)app_ptr;
+	if (button == 1)
+		app->mouse.action |= MOUSE_LCLICK;
+	if (button == 2)
+		app->mouse.action |= MOUSE_RCLICK;
+	return (0);
+}
+
+int	on_mouse_released(int button, int pos_x, int pos_y, void *app_ptr)
+{
+	t_app	*app;
+
+	(void)pos_x;
+	(void)pos_y;
+	app = (t_app *)app_ptr;
+	if (button == 1)
+		app->mouse.action &= ~MOUSE_LCLICK;
+	if (button == 2)
+		app->mouse.action &= ~MOUSE_RCLICK;
+	return (0);
+}
+
+int main(int ac, char **av)
 {
 	t_app		app;
 	t_frame		*frame;
 	t_screen	*screen;
+
+	if (ac != 2)
+		return (1);
 
 	app.mlx = mlx_init();
 	frame = malloc(sizeof(t_frame));
@@ -125,48 +181,29 @@ int main()
 	app.frame = frame;
 	app.zoom_factor = 0.05;
 	app.zoom = 4;
-	app.offset = vec2d(ZOOM_RE, -ZOOM_IM);
+	app.offset = vec2d(0, 0);
+	app.mouse = (t_mouse){ .action=0, .pos=vec2d(0, 0) };
 
-	/** PALETTE 256 **/
-	#if PALETTE_SIZE == 256
-	set_palette(app.palette, 0, 32, (t_color[2]){{0xffffff}, {0xf7da57}});
-	set_palette(app.palette, 33, 44, (t_color[2]){{0xf7da57}, {0xe8761e}});
-	set_palette(app.palette, 44, 55, (t_color[2]){{0xe8761e}, {0x0}});
-	set_palette(app.palette, 55, 65, (t_color[2]){{0xffffff}, {0x0c52f5}});
-	set_palette(app.palette, 65, 86, (t_color[2]){{0xffffff}, {0xf7da57}});
-	set_palette(app.palette, 87, 92, (t_color[2]){{0xf7da57}, {0xe8761e}});
-	set_palette(app.palette, 92, 98, (t_color[2]){{0xe8761e}, {0x0}});
-	set_palette(app.palette, 98, 112, (t_color[2]){{0xffffff}, {0x0c52f5}});
-	set_palette(app.palette, 112, 135, (t_color[2]){{0xffffff}, {0xf7da57}});
-	set_palette(app.palette, 135, 145, (t_color[2]){{0xf7da57}, {0xe8761e}});
-	set_palette(app.palette, 145, 150, (t_color[2]){{0xe8761e}, {0x0}});
-	set_palette(app.palette, 150, 160, (t_color[2]){{0xffffff}, {0x0c52f5}});
-	set_palette(app.palette, 160, 165, (t_color[2]){{0xffffff}, {0xf7da57}});
-	set_palette(app.palette, 165, 180, (t_color[2]){{0xf7da57}, {0xe8761e}});
-	set_palette(app.palette, 180, 185, (t_color[2]){{0xe8761e}, {0x0}});
-	set_palette(app.palette, 185, 255, (t_color[2]){{0xffffff}, {0x0c52f5}});
-	#endif
-	/**			**/
+/*  SETTING PALETTE */
+/*	set_palette(app.palette, 0, 16, (t_color[2]){{0x000764}, {0x206acb}});
+	set_palette(app.palette, 16, 42, (t_color[2]){{0x206acb}, {0xedffff}});
+	set_palette(app.palette, 42, 64, (t_color[2]){{0xedffff}, {0xffaa00}});
+	set_palette(app.palette, 64, 85, (t_color[2]){{0xedffff}, {0x000200}});
+	set_palette(app.palette, 85, 100, (t_color[2]){{0xedffff}, {0x000764}});*/
 
-	/** PALETTE 32 **/
-	#if PALETTE_SIZE == 32
-	set_palette(app.palette, 0, 10, (t_color[2]){{0xffffff}, {0xf7da57}});
-	set_palette(app.palette, 10, 16, (t_color[2]){{0xf7da57}, {0xe8761e}});
-	set_palette(app.palette, 16, 18, (t_color[2]){{0xe8761e}, {0x0}});
-	set_palette(app.palette, 18, 31, (t_color[2]){{0xffffff}, {0x0c52f5}});
-	#endif
-	/**			   **/
+/* 	EXPORTING PALETTE */
+/*  export_palette("palette.plt", app.palette, PALETTE_SIZE); */
+	t_color	*p = load_palette(av[1], &app.palette_size);
+	if (!p)
+		return (on_exit(&app));
+	if (!(app.palette = malloc(sizeof(t_color) * app.palette_size)))
+		return (0);
+	for (int i = 0; i < (int)app.palette_size; i++)
+		app.palette[i] = p[i];
 
-
-	/** PALETTE 16 **/
-	#if PALETTE_SIZE == 16
-	set_palette(app.palette, 0, 5, (t_color[2]){{0xffffff}, {0xf7da57}});
-	set_palette(app.palette, 5, 8, (t_color[2]){{0xf7da57}, {0xe8761e}});
-	set_palette(app.palette, 8, 9, (t_color[2]){{0xe8761e}, {0x0}});
-	set_palette(app.palette, 9, 16, (t_color[2]){{0xffffff}, {0x0c52f5}});
-	#endif
-	/**			   **/
-
+	mlx_hook(app.frame->window, ButtonPress, ButtonPressMask, &on_mouse_pressed, &app);
+	mlx_hook(app.frame->window, ButtonRelease, ButtonReleaseMask, &on_mouse_released, &app);
+	mlx_hook(app.frame->window, KeyPress, KeyPressMask, &on_key_pressed, &app);
 	mlx_hook(app.frame->window, DestroyNotify, NoEventMask, &on_exit, &app);
 	mlx_loop_hook(app.mlx, draw_loop, &app);
 	mlx_loop(app.mlx);

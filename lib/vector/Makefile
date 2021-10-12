@@ -2,7 +2,7 @@
 NAME			= libvector.a
 OUT_PATH		= .
 
-SRCS			= vectors2d.c vectors2f.c vectors2i.c vector_utils.c vec.c
+SRCS			= vectors2d.c vectors2f.c vectors2i.c vector_utils.c vec.c vec_lerp.c
 
 PATH_INC		= vectors.h
 
@@ -14,7 +14,7 @@ CC				= gcc -c
 AR				= ar rcs
 RANLIB			= ranlib
 OUT				= -o 
-CFLAGS			= -Wall -Wextra -Werror
+CFLAGS			= -Wall -Wextra -Werror 
 INCLUDES		= -Iincludes -Ilibft
 
 MINFO			= [\033[1;32m$(NAME)\033[0m] : 

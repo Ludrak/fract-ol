@@ -8,11 +8,11 @@ INCS=inc/color.h inc/fractol.h inc/utils.h
 LIBS=libmlx.a libvector.a
 LIB_DIR=lib/
 
-SRCS=main.c color.c utils.c color_palette.c
+SRCS=main.c color.c utils.c color_palette.c palette_loader.c
 OBJS=$(addprefix $(BIN_DIR)/,$(SRCS:.c=.o))
 
 FRAMEWORKS=AppKit OpenGL
-CFLAGS=-Werror -Wall -Wextra -fsanitize=address -g3 -Ofast -march=native
+CFLAGS=-Werror -Wall -Wextra -march=native -Ofast -fsanitize=address -g3
 IFLAGS=$(INC_DIR:%=-I%)
 LFLAGS=$(addprefix -L, $(LIBS:lib%.a=$(LIB_DIR)%)) $(LIBS:lib%.a=-l%)
 FFLAGS=$(FRAMEWORKS:%=-framework %)

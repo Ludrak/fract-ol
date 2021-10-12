@@ -25,4 +25,7 @@ t_color         clerp(t_color from, t_color to, float lerp);
 
 void    		set_palette(t_color *palette, size_t index, size_t size, t_color colors[2]);
 
+t_color *load_palette(char *file, uint32_t *size);
+uint8_t export_palette(char *file_name, t_color *palette, uint32_t size);
+
 #endif
